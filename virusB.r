@@ -1,4 +1,4 @@
-#08/03 - CREARE I FASTA PER IL VIRUS A
+#23/02 - VIRUS B SOSTITUZIONE SNP E SALVATAGGIO FASTA
 
 setwd("C:/Documents/SNP")
 #imposta la directory nella cartella SNP
@@ -6,26 +6,26 @@ library("Biostrings")
 library("seqinr")
 library(Rsubread)
 library(data.table)
-myfilesA<-list.files(path=".", pattern=".VCF", all.files=FALSE, full.names=FALSE)
-#crea una lista con tutti i file nella cartella della directory, in questo caso SNP
+myfilesB<-list.files(path=".", pattern=".VCF", all.files=FALSE, full.names=FALSE)
+#crea una lista con tutti i file nella cartella della directory, in questo caso VCF
 
 
-myfilesA<-myfilesA[grep("DWV-A",myfilesA)]
-#devo selezionare solo le tabelle del virus A
-highcovA<-fread("../ABcount/ABcountvirusA.txt")$Sample
-highcovA<-gsub("ReadsPerGene.out.tab","",highcovA)
-newfilesA<-rep(NA,length(highcovA))
-for(aaa in 1:length(highcovA))
+myfilesB<-myfilesB[grep("DWV-B",myfilesB)]
+#devo selezionare solo le tabelle del virus B
+highcovB<-fread("../ABcount/ABcountvirusB.txt")$Sample
+highcovB<-gsub("ReadsPerGene.out.tab","",highcovB)
+newfilesB<-rep(NA,length(highcovB))
+for(aaa in 1:length(highcovB))
 {
-newfilesA[aaa]<-myfilesA[grep(highcovA[aaa],myfilesA)]
+newfilesB[aaa]<-myfilesB[grep(highcovB[aaa],myfilesB)]
 }
 #il loop serve a tenere solo i file con alto coverage >5000 dal file di testo creato con ABCcount
-myfilesA<-newfilesA
-write(myfilesA,"myfilesA.txt")
+myfilesB<-newfilesB
+write(myfilesB,"myfilesB.txt")
 #salva la lista come file di testo
-for(aaa in 1:length(myfilesA))
+for(aaa in 1:length(myfilesB))
 {
-a<-myfilesA[aaa]
+a<-myfilesB[aaa]
 #a considera scorre tra tutti i files e costituisce un nome univoco per tutti
 print(a)
 VCF<-fread(a,skip=9)
@@ -59,7 +59,6 @@ VCF$cov2<-unlist(lapply(strsplit(VCF$allcov,","),"[",2))
 #inserisco il secondo valore della colonna allcov nella colonna cov2
 VCF$cov3<-unlist(lapply(strsplit(VCF$allcov,","),"[",3))
 #inserisco il terzo valore della colonna allcov nella colonna cov3
-#mi evidenzia le prime 10 righe e 12 colonne della tabella, utile anche per visualizzare bene la tabella
 VCF$allcov<-NULL
 #mi elimina la colonna indicata
 VCF$DP<-unlist(lapply(strsplit(VCF$INFO,";"),"[",1))
@@ -132,7 +131,7 @@ if(VCF$Freq2[bbb]>=1 & VCF$Freq2[bbb]>VCF$Freq.[bbb] & VCF$Freq2[bbb]>VCF$Freq3[
 if(VCF$Freq3[bbb]>=1 & VCF$Freq3[bbb]>VCF$Freq.[bbb] & VCF$Freq3[bbb]>VCF$Freq2[bbb]) VCF$newRef[bbb]=VCF$SNP3[bbb]
 }
 VCF
-# quando il valore di Freq1 è maggiore di 1 e maggiore delle altra frequenze prende la base di SNP e la sostituisce nella colonna newREF, poi fa la stessa cosa con Freq2 e Freq3
+# quando il valore di Freq1 è maggiore di 1 e maggiore delle altre frequenze prende la base di SNP e la sostituisce nella colonna newREF, poi fa la stessa cosa con Freq2 e Freq3
 VCF$newRef != VCF$REF
 # idividua le righe dove la base azotata differisce tra la newRef e REF e mi da come risultato TRUE e FALSE
 VCF[VCF$newRef != VCF$REF]
@@ -165,49 +164,49 @@ Freqcinquanta
 write.table(Freqcinquanta,paste0("../Freqcinquanta/",a),quote=F,row.names=F)
 
 #imposto la directory su fasta
-A<-read.fasta("virusA.fasta",forceDNAtolower = FALSE)
-# è un comando del pacchetto seqinr che permette di leggere i file fasta per il virus A
-A
-#visualizzo il file Fasta del virus A
+#A<-read.fasta("virusA.fasta",forceDNAtolower = FALSE)
+
+B<-read.fasta("virusB.fasta",forceDNAtolower = FALSE)
+# è un comando del pacchetto seqinr che permette di leggere i file fasta e li leggo una volta per il virus A e una per il B
+
+#visualizzo il file Fasta del virus A o B
 
 #eseguo il loop per importare con il nome dei VCF automaticamentefor(aaa in 1:length(myfiles))
 
-a<-myfilesA[aaa]
+a<-myfilesB[aaa]
 for(ccc in 1:nrow(Freqcinquanta))
 {
-if(A[[Freqcinquanta$"#CHROM"[ccc]]][Freqcinquanta$POS[ccc]]!=Freqcinquanta$REF[ccc] & (A[[Freqcinquanta$"#CHROM"[ccc]]][Freqcinquanta$POS[ccc]]%in% c("A","C","G","T"))) stop("reference is wrong")
-A[[Freqcinquanta$"#CHROM"[ccc]]][Freqcinquanta$POS[ccc]]=Freqcinquanta$newRef[ccc]
+if(B[[Freqcinquanta$"#CHROM"[ccc]]][Freqcinquanta$POS[ccc]]!=Freqcinquanta$REF[ccc] & (B[[Freqcinquanta$"#CHROM"[ccc]]][Freqcinquanta$POS[ccc]]%in% c("A","C","G","T"))) stop("Your reference is wrong") 
+B[[Freqcinquanta$"#CHROM"[ccc]]][Freqcinquanta$POS[ccc]]=Freqcinquanta$newRef[ccc]
 }
-#permette di sostituire al file A la base delle SNP con Freq>50%
+
+#permette di sostituire al file A o al file B la base delle SNP con Freq>50%
 outfile<-gsub(".VCF",".fasta",a)
-write.fasta(A,names=names(A),file.out=paste0("../fasta/",outfile))
+#write.fasta(A,names=names(A),file.out=paste0("../fasta/",outfile))
+write.fasta(B,names=names(B),file.out=paste0("../fasta/",outfile))
 #salva il fasta con lo stesso nome del VCF con le basi corrette
 }
 
-#confronto i fasta con la reference "virus A" vedi scheda a fianco
-
 setwd("../fasta/")
-
-DWVA<-list.files(pattern = "DWV-A")
-#seleziona una lista con i fasta creati per il virus A
+DWVB<-list.files(pattern = "DWV-B")
+#seleziona una lista con i fasta creati per il virus B
 
 #DWVB<-myfiles[grep("DWV-B",myfiles)]
 
-for(eee in 1:length(DWVA))
+for(eee in 1:length(DWVB))
 {
-infasta<-read.fasta(file = DWVA[eee],forceDNAtolower=F)
-seqname<-gsub(".fasta","",DWVA[eee])
-if(eee==1) 
+infasta<-read.fasta(file = DWVB[eee],forceDNAtolower=F)
+seqname<-gsub(".fasta","",DWVB[eee])
+if(eee==1)
 {
-totalA<-infasta
-names(totalA)<-seqname
+totalB<-infasta
+names(totalB)<-seqname
 }
 if(eee>1) 
 {
 names(infasta)<-seqname
-totalA<-c(totalA,infasta)
+totalB<-c(totalB,infasta)
 }
 }
-write.fasta(sequences = totalA,names=names(totalA),file.out = "totalA.fasta")
-#crea un unico file fasta chiamato totalA.fasta a partire da più file fasta
-
+write.fasta(sequences = totalB,names=names(totalB),file.out = "totalB.fasta")
+#crea un unico file fasta chiamato totalB.fasta a partire da più file fasta
