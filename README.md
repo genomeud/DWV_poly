@@ -1,2 +1,3 @@
 # DWV_poly
-Analysis of polymorphisms in Deformed Wing Virus
+Collection of R scripts used for the analysis of polymorphisms in Deformed Wing Virus.
+The project is part of the BSc degree thesis of Matteo Fabiani
